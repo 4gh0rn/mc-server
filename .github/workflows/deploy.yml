@@ -28,6 +28,20 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
           fi
 
+      - name: Ensure Docker Compose
+        id: compose
+        run: |
+          set -e
+          if docker compose version >/dev/null 2>&1; then
+            echo "cmd=docker compose" >> "$GITHUB_OUTPUT"
+          elif command -v docker-compose >/dev/null 2>&1; then
+            echo "cmd=docker-compose" >> "$GITHUB_OUTPUT"
+          else
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.25.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            echo "cmd=docker-compose" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy containers
         env:
           MINECRAFT_VERSION: ${{ vars.MINECRAFT_VERSION || 'latest' }}
@@ -41,7 +55,8 @@ jobs:
           MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
         run: |
           cd "$HOME/mc-server"
-          docker-compose pull || true
-          docker-compose down
-          docker-compose up -d --build
+          COMPOSE_CMD="${{ steps.compose.outputs.cmd }}"
+          $COMPOSE_CMD pull || true
+          $COMPOSE_CMD down
+          $COMPOSE_CMD up -d --build
           docker image prune -f
