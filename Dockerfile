@@ -1,15 +1,17 @@
 FROM ubuntu:22.04
 
-# Set environment variables with defaults
-ENV MINECRAFT_VERSION=latest
-ENV MINECRAFT_PORT=8888
-ENV SERVER_NAME="Minecraft Server"
-ENV MAX_PLAYERS=20
-ENV DIFFICULTY=easy
-ENV GAMEMODE=survival
-ENV EULA=false
-ENV MEMORY_MIN=1G
-ENV MEMORY_MAX=2G
+# Set environment variables with defaults (override via docker compose/env files)
+ENV MINECRAFT_VERSION=latest \
+    MINECRAFT_PORT=8888 \
+    SERVER_NAME="Minecraft Server" \
+    MAX_PLAYERS=20 \
+    DIFFICULTY=easy \
+    GAMEMODE=survival \
+    EULA=false \
+    MEMORY_MIN=1G \
+    MEMORY_MAX=2G \
+    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar https://github.com/EngineHub/WorldEdit/releases/download/worldedit-bukkit-7.3.3/worldedit-bukkit-7.3.3.jar" \
+    PLUGIN_FORCE_DOWNLOAD=false
 
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive

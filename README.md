@@ -43,8 +43,12 @@ Connect from Minecraft Java Edition to `localhost:8888` (or the host IP).
 | `EULA` | `false` | Must be `true` to run |
 | `MEMORY_MIN` | `1G` | JVM `-Xms` |
 | `MEMORY_MAX` | `2G` | JVM `-Xmx` |
+| `PLUGIN_URLS` | EssentialsX + WorldEdit | Space/comma separated `.jar` URLs downloaded into `plugins/` |
+| `PLUGIN_FORCE_DOWNLOAD` | `false` | Set `true` to overwrite existing plugin jars on each start |
 
 Use either `.env` (recommended) or edit the `environment:` block in `compose.yml`. The world, properties, and logs persist in the `minecraft-data` volume.
+
+By default the container downloads EssentialsX and WorldEdit to demonstrate plugin usage. Override `PLUGIN_URLS` to provide your own plugin list.
 
 ---
 
@@ -59,6 +63,26 @@ Use either `.env` (recommended) or edit the `environment:` block in `compose.yml
 | Check volume | `docker volume inspect mc-server_minecraft-data` |
 
 Troubleshooting: verify `EULA=true`, check logs, ensure port 8888 is free, and confirm Docker has enough RAM.
+
+### Quick Status Script
+
+Use this helper to quickly verify that the server is online and see version/MOTD/players (e.g., in CI or after a deploy). Setup once per workstation:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/check_status.py <host>:<port>
+```
+
+Sample output:
+
+```
+version: Java 1.19.4 (protocol 762)
+motd: A Minecraft Server
+players: 0/20 No players online
+ping: 64.75 ms
+```
 
 ---
 

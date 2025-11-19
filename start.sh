@@ -23,6 +23,25 @@ if [ ! -f server.properties ]; then
     echo "enable-command-block=true" >> server.properties
 fi
 
+# Download plugins if requested
+if [ -n "${PLUGIN_URLS}" ]; then
+    mkdir -p plugins
+    IFS=', ' read -r -a urls <<< "${PLUGIN_URLS}"
+    for url in "${urls[@]}"; do
+        if [ -z "${url}" ]; then
+            continue
+        fi
+        filename=$(basename "${url}")
+        destination="plugins/${filename}"
+        if [ ! -f "${destination}" ] || [ "${PLUGIN_FORCE_DOWNLOAD}" = "true" ]; then
+            echo "Downloading plugin ${filename}..."
+            curl -L -o "${destination}" "${url}"
+        else
+            echo "Plugin ${filename} already present, skipping download."
+        fi
+    done
+fi
+
 # Start the server
 echo "Starting Minecraft server..."
 java -Xms${MEMORY_MIN} -Xmx${MEMORY_MAX} -jar server.jar nogui
