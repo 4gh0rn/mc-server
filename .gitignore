@@ -12,6 +12,7 @@ whitelist.json
 eula.txt
 server.properties
 *.log
+.venv/
 
 # Docker
 .env

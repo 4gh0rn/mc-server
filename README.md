@@ -4,6 +4,17 @@ Minimal containerized Minecraft server setup with Docker, Docker Compose, and an
 
 ---
 
+## Table of Contents
+
+1. [Files](#1-files)
+2. [Quickstart (local)](#2-quickstart-local)
+3. [Configuration](#3-configuration)
+4. [Operations](#4-operations)
+5. [CI/CD (self-hosted runner)](#5-cicd-self-hosted-runner)
+6. [Additional Notes](#6-additional-notes)
+
+---
+
 ## 1. Files
 
 | File | Purpose |
