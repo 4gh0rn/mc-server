@@ -1,0 +1,47 @@
+name: Deploy Minecraft Server
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Navigate to project directory
+        run: |
+          PROJECT_DIR="$HOME/mc-server"
+          if [ ! -d "$PROJECT_DIR" ]; then
+            mkdir -p "$PROJECT_DIR"
+          fi
+          cd "$PROJECT_DIR"
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/${{ github.repository }}.git .
+          else
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+          fi
+
+      - name: Deploy containers
+        env:
+          MINECRAFT_VERSION: ${{ vars.MINECRAFT_VERSION || 'latest' }}
+          MINECRAFT_PORT: ${{ vars.MINECRAFT_PORT || '8888' }}
+          SERVER_NAME: ${{ vars.SERVER_NAME || 'Minecraft Server' }}
+          MAX_PLAYERS: ${{ vars.MAX_PLAYERS || '20' }}
+          DIFFICULTY: ${{ vars.DIFFICULTY || 'easy' }}
+          GAMEMODE: ${{ vars.GAMEMODE || 'survival' }}
+          EULA: "true"
+          MEMORY_MIN: ${{ vars.MEMORY_MIN || '1G' }}
+          MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
+        run: |
+          cd "$HOME/mc-server"
+          docker compose pull || true
+          docker compose down
+          docker compose up -d --build
+          docker image prune -f
