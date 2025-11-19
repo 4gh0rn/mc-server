@@ -2,7 +2,7 @@ name: Deploy Minecraft Server
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, deployment_mc]
   workflow_dispatch:
 
 jobs:
