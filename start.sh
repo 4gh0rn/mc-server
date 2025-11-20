@@ -2,7 +2,7 @@
 set -e
 
 # Download/Update Paper server
-PAPER_VERSION="${PAPER_VERSION:-1.21.1}"
+PAPER_VERSION="${PAPER_VERSION:-1.21.10}"
 echo "Checking Paper version: ${PAPER_VERSION}"
 
 # Get latest build number for the version

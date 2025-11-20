@@ -59,7 +59,7 @@ jobs:
 
       - name: Deploy containers
         env:
-          PAPER_VERSION: ${{ vars.PAPER_VERSION || '1.21.1' }}
+          PAPER_VERSION: ${{ vars.PAPER_VERSION || '1.21.10' }}
           MINECRAFT_PORT: ${{ vars.MINECRAFT_PORT || '8888' }}
           SERVER_NAME: ${{ vars.SERVER_NAME || 'Minecraft Server' }}
           MAX_PLAYERS: ${{ vars.MAX_PLAYERS || '20' }}
