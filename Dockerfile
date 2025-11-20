@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 # Set environment variables with defaults (override via docker compose/env files)
-ENV PAPER_VERSION=1.21.10 \
+ENV PAPER_VERSION=1.21.1 \
     MINECRAFT_PORT=8888 \
     SERVER_NAME="Minecraft Server" \
     MAX_PLAYERS=20 \
@@ -10,7 +10,7 @@ ENV PAPER_VERSION=1.21.10 \
     EULA=false \
     MEMORY_MIN=1G \
     MEMORY_MAX=2G \
-    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar,https://github.com/EngineHub/WorldEdit/releases/download/7.3.17/worldedit-bukkit-7.3.17.jar" \
+    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar,https://github.com/EngineHub/WorldEdit/releases/download/7.3.12/worldedit-bukkit-7.3.12.jar" \
     PLUGIN_FORCE_DOWNLOAD=false
 
 # Avoid interactive prompts during package installation

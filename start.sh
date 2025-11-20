@@ -2,7 +2,7 @@
 set -e
 
 # Download/Update Paper server
-PAPER_VERSION="${PAPER_VERSION:-1.21.10}"
+PAPER_VERSION="${PAPER_VERSION:-1.21.1}"
 echo "Checking Paper version: ${PAPER_VERSION}"
 
 # Get latest build number for the version
@@ -70,19 +70,31 @@ if [ -n "${PLUGIN_URLS}" ]; then
         fi
         filename=$(basename "${url}")
         destination="plugins/${filename}"
-        if [ ! -f "${destination}" ] || [ "${PLUGIN_FORCE_DOWNLOAD}" = "true" ]; then
-            echo "Downloading plugin ${filename} from ${url}..."
-            if curl -L -f -o "${destination}" "${url}"; then
-                echo "Successfully downloaded ${filename}"
-            else
-                echo "ERROR: Failed to download ${filename} from ${url}"
-            fi
-        else
+        
+        # Extract plugin base name (e.g., "EssentialsX" from "EssentialsX-2.21.2.jar")
+        plugin_base=$(echo "${filename}" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+.*\.jar$//')
+        
+        # Remove old versions of the same plugin (e.g., EssentialsX-2.20.1.jar when downloading EssentialsX-2.21.2.jar)
+        if [ -n "${plugin_base}" ] && [ "${plugin_base}" != "${filename}" ]; then
+            echo "Removing old versions of ${plugin_base}..."
+            find plugins/ -maxdepth 1 -type f -name "${plugin_base}-*.jar" ! -name "${filename}" -exec rm -f {} \; 2>/dev/null || true
+        fi
+        
+        # Skip download if file already exists and force download is not enabled
+        if [ -f "${destination}" ] && [ "${PLUGIN_FORCE_DOWNLOAD}" != "true" ]; then
             echo "Plugin ${filename} already present, skipping download."
+            continue
+        fi
+        
+        echo "Downloading plugin ${filename} from ${url}..."
+        if curl -L -f -o "${destination}" "${url}"; then
+            echo "Successfully downloaded ${filename}"
+        else
+            echo "ERROR: Failed to download ${filename} from ${url}"
         fi
     done
     echo "Plugin download process completed. Plugins in plugins/:"
-    ls -la plugins/ 2>/dev/null || echo "No plugins directory found"
+    ls -la plugins/*.jar 2>/dev/null | awk '{print $9}' | xargs -n1 basename || echo "No plugins found"
 else
     echo "No PLUGIN_URLS set, skipping plugin download"
 fi
