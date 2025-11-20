@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 # Set environment variables with defaults (override via docker compose/env files)
-ENV MINECRAFT_VERSION=latest \
+ENV PAPER_VERSION=1.20.1 \
     MINECRAFT_PORT=8888 \
     SERVER_NAME="Minecraft Server" \
     MAX_PLAYERS=20 \

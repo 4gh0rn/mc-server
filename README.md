@@ -19,7 +19,7 @@ Minimal containerized Minecraft server setup with Docker, Docker Compose, and an
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Builds OpenJDK‑17 image and installs the official server jar |
+| `Dockerfile` | Builds OpenJDK‑17 image and installs Paper server (plugin-compatible) |
 | `compose.yml` | Defines `mc-server` service, ports, volume, and env vars |
 | `start.sh` | Downloads server jar, writes `server.properties`, starts Java process |
 | `.env.example` | Template for local configuration |
@@ -30,14 +30,14 @@ Minimal containerized Minecraft server setup with Docker, Docker Compose, and an
 ## 2. Quickstart (local)
 
 ```bash
-git clone <repo> && cd mc-server
-cp .env.example .env      # set EULA=true and adjust settings
-docker compose up -d      # start server on port 8888
-docker compose logs -f    # follow logs
-docker compose down       # stop
+git clone git@github.com:4gh0rn/mc-server.git && cd mc-server
+cp .env.example .env
+docker compose up -d
+docker compose logs -f
+docker compose down
 ```
 
-Connect from Minecraft Java Edition to `localhost:8888` (or the host IP).
+Connect from Minecraft Java Edition to `<server-ip>:8888`.
 
 ---
 
@@ -45,7 +45,7 @@ Connect from Minecraft Java Edition to `localhost:8888` (or the host IP).
 
 | Variable | Default | Notes |
 |----------|---------|-------|
-| `MINECRAFT_VERSION` | `latest` | Mojang server jar version |
+| `PAPER_VERSION` | `1.20.1` | Paper server version (e.g., `1.20.1`, `1.21.1`) |
 | `MINECRAFT_PORT` | `8888` | Update `ports` if you change this |
 | `SERVER_NAME` | `Minecraft Server` | MOTD |
 | `MAX_PLAYERS` | `20` | Integer |
@@ -99,17 +99,9 @@ ping: 64.75 ms
 
 ## 5. CI/CD (self-hosted runner)
 
-1. Install a GitHub Actions runner on the VM where the server should live:
-   ```bash
-   mkdir actions-runner && cd actions-runner
-   curl -o runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz
-   tar xzf runner.tar.gz
-   ./config.sh --url https://github.com/<user>/<repo> --token <token>
-   sudo ./svc.sh install && sudo ./svc.sh start
-   sudo usermod -aG docker svc_actions-runner
-   ```
+1. Install a GitHub Actions runner on the VM where the server should live.
 2. (Optional) add repository variables if you want to override defaults:
-   `MINECRAFT_VERSION`, `MINECRAFT_PORT`, `SERVER_NAME`, `MAX_PLAYERS`, `DIFFICULTY`, `GAMEMODE`, `MEMORY_MIN`, `MEMORY_MAX`.
+   `PAPER_VERSION`, `MINECRAFT_PORT`, `SERVER_NAME`, `MAX_PLAYERS`, `DIFFICULTY`, `GAMEMODE`, `MEMORY_MIN`, `MEMORY_MAX`.
 3. Push to `main` (or trigger `workflow_dispatch`). The workflow pulls the repo inside `~/mc-server`, runs `docker compose up -d --build`, and passes env vars directly to Compose—no `.env` file is written.
 
 Benefits: no SSH keys, direct access to Docker, fast redeploys.

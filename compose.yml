@@ -9,7 +9,7 @@ services:
     volumes:
       - minecraft-data:/minecraft
     environment:
-      - MINECRAFT_VERSION=${MINECRAFT_VERSION:-latest}
+      - PAPER_VERSION=${PAPER_VERSION:-1.20.1}
       - MINECRAFT_PORT=${MINECRAFT_PORT:-8888}
       - SERVER_NAME=${SERVER_NAME:-Minecraft Server}
       - MAX_PLAYERS=${MAX_PLAYERS:-20}
