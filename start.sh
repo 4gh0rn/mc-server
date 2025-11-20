@@ -90,7 +90,9 @@ if [ -n "${PLUGIN_URLS}" ]; then
         if curl -L -f -o "${destination}" "${url}"; then
             echo "Successfully downloaded ${filename}"
         else
-            echo "ERROR: Failed to download ${filename} from ${url}"
+            echo "WARNING: Failed to download ${filename} from ${url} (404 or network error)"
+            echo "Plugin will be skipped, but server will continue to start"
+            rm -f "${destination}" 2>/dev/null || true
         fi
     done
     echo "Plugin download process completed. Plugins in plugins/:"

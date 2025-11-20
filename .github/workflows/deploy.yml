@@ -42,6 +42,21 @@ jobs:
             echo "cmd=docker-compose" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Clean old server files for update
+        run: |
+          cd "$HOME/mc-server"
+          COMPOSE_CMD="${{ steps.compose.outputs.cmd }}"
+          # Stop containers if running
+          $COMPOSE_CMD down || true
+          # Remove old server.jar and .paper_version from volume to force update
+          VOLUME_NAME="mc-server_minecraft-data"
+          if docker volume inspect "$VOLUME_NAME" >/dev/null 2>&1; then
+            echo "Cleaning old server files from volume..."
+            docker run --rm -v "$VOLUME_NAME:/minecraft" ubuntu:22.04 bash -c "rm -f /minecraft/server.jar /minecraft/.paper_version && echo 'Old server files removed'"
+          else
+            echo "Volume does not exist yet, skipping cleanup"
+          fi
+
       - name: Deploy containers
         env:
           PAPER_VERSION: ${{ vars.PAPER_VERSION || '1.21.1' }}
@@ -53,12 +68,11 @@ jobs:
           EULA: "true"
           MEMORY_MIN: ${{ vars.MEMORY_MIN || '1G' }}
           MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
-          PLUGIN_URLS: ${{ vars.PLUGIN_URLS || 'https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar,https://github.com/EngineHub/WorldEdit/releases/download/7.3.12/worldedit-bukkit-7.3.12.jar' }}
+          PLUGIN_URLS: ${{ vars.PLUGIN_URLS || 'https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar' }}
           PLUGIN_FORCE_DOWNLOAD: ${{ vars.PLUGIN_FORCE_DOWNLOAD || 'false' }}
         run: |
           cd "$HOME/mc-server"
           COMPOSE_CMD="${{ steps.compose.outputs.cmd }}"
           $COMPOSE_CMD pull || true
-          $COMPOSE_CMD down
           $COMPOSE_CMD up -d --build
           docker image prune -f
