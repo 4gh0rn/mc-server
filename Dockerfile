@@ -10,7 +10,7 @@ ENV PAPER_VERSION=1.20.1 \
     EULA=false \
     MEMORY_MIN=1G \
     MEMORY_MAX=2G \
-    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar https://github.com/EngineHub/WorldEdit/releases/download/worldedit-bukkit-7.3.3/worldedit-bukkit-7.3.3.jar" \
+    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.20.1/EssentialsX-2.20.1.jar,https://github.com/EngineHub/WorldEdit/releases/download/worldedit-bukkit-7.3.3/worldedit-bukkit-7.3.3.jar" \
     PLUGIN_FORCE_DOWNLOAD=false
 
 # Avoid interactive prompts during package installation

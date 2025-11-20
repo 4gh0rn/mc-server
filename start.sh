@@ -44,7 +44,7 @@ echo "PLUGIN_URLS: ${PLUGIN_URLS}"
 if [ -n "${PLUGIN_URLS}" ]; then
     echo "Creating plugins directory..."
     mkdir -p plugins
-    IFS=', ' read -r -a urls <<< "${PLUGIN_URLS}"
+    IFS=',' read -r -a urls <<< "${PLUGIN_URLS}"
     echo "Found ${#urls[@]} plugin URL(s) to process"
     for url in "${urls[@]}"; do
         if [ -z "${url}" ]; then

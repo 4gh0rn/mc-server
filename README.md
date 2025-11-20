@@ -54,7 +54,7 @@ Connect from Minecraft Java Edition to `<server-ip>:8888`.
 | `EULA` | `false` | Must be `true` to run |
 | `MEMORY_MIN` | `1G` | JVM `-Xms` |
 | `MEMORY_MAX` | `2G` | JVM `-Xmx` |
-| `PLUGIN_URLS` | EssentialsX + WorldEdit | Space/comma separated `.jar` URLs downloaded into `plugins/` |
+| `PLUGIN_URLS` | EssentialsX + WorldEdit | Comma-separated `.jar` URLs downloaded into `plugins/` |
 | `PLUGIN_FORCE_DOWNLOAD` | `false` | Set `true` to overwrite existing plugin jars on each start |
 
 Use either `.env` (recommended) or edit the `environment:` block in `compose.yml`. The world, properties, and logs persist in the `minecraft-data` volume.
