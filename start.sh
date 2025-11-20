@@ -74,10 +74,11 @@ if [ -n "${PLUGIN_URLS}" ]; then
         # Extract plugin base name (e.g., "EssentialsX" from "EssentialsX-2.21.2.jar")
         plugin_base=$(echo "${filename}" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+.*\.jar$//')
         
-        # Remove old versions of the same plugin (e.g., EssentialsX-2.20.1.jar when downloading EssentialsX-2.21.2.jar)
+        # Always remove old versions of the same plugin (even if new one already exists)
         if [ -n "${plugin_base}" ] && [ "${plugin_base}" != "${filename}" ]; then
             echo "Removing old versions of ${plugin_base}..."
-            find plugins/ -maxdepth 1 -type f -name "${plugin_base}-*.jar" ! -name "${filename}" -exec rm -f {} \; 2>/dev/null || true
+            # Remove all versions except the one we want
+            find plugins/ -maxdepth 1 -type f -name "${plugin_base}-*.jar" ! -name "${filename}" -delete 2>/dev/null || true
         fi
         
         # Skip download if file already exists and force download is not enabled

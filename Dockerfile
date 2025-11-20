@@ -16,10 +16,10 @@ ENV PAPER_VERSION=1.21.1 \
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install required packages
+# Install required packages (Java 21 for Paper 1.21.x)
 RUN apt-get update && \
     apt-get install -y \
-    openjdk-17-jdk \
+    openjdk-21-jdk \
     wget \
     curl \
     && rm -rf /var/lib/apt/lists/*
