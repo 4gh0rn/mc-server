@@ -39,9 +39,13 @@ if [ ! -f server.properties ]; then
 fi
 
 # Download plugins if requested
+echo "Checking for plugins to download..."
+echo "PLUGIN_URLS: ${PLUGIN_URLS}"
 if [ -n "${PLUGIN_URLS}" ]; then
+    echo "Creating plugins directory..."
     mkdir -p plugins
     IFS=', ' read -r -a urls <<< "${PLUGIN_URLS}"
+    echo "Found ${#urls[@]} plugin URL(s) to process"
     for url in "${urls[@]}"; do
         if [ -z "${url}" ]; then
             continue
@@ -49,12 +53,20 @@ if [ -n "${PLUGIN_URLS}" ]; then
         filename=$(basename "${url}")
         destination="plugins/${filename}"
         if [ ! -f "${destination}" ] || [ "${PLUGIN_FORCE_DOWNLOAD}" = "true" ]; then
-            echo "Downloading plugin ${filename}..."
-            curl -L -o "${destination}" "${url}"
+            echo "Downloading plugin ${filename} from ${url}..."
+            if curl -L -f -o "${destination}" "${url}"; then
+                echo "Successfully downloaded ${filename}"
+            else
+                echo "ERROR: Failed to download ${filename} from ${url}"
+            fi
         else
             echo "Plugin ${filename} already present, skipping download."
         fi
     done
+    echo "Plugin download process completed. Plugins in plugins/:"
+    ls -la plugins/ 2>/dev/null || echo "No plugins directory found"
+else
+    echo "No PLUGIN_URLS set, skipping plugin download"
 fi
 
 # Start the server
