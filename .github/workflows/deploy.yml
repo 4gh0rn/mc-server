@@ -36,6 +36,6 @@ jobs:
           MEMORY_MIN: ${{ vars.MEMORY_MIN || '1G' }}
           MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
         run: |
-          docker compose down || true
-          docker compose up -d
+          docker-compose down || true
+          docker-compose up -d
           docker image prune -f
