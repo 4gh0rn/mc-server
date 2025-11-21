@@ -1,28 +1,22 @@
-FROM ubuntu:22.04
+FROM eclipse-temurin:21-jdk
 
 # Set environment variables with defaults (override via docker compose/env files)
-ENV PAPER_VERSION=1.21.10 \
+ENV MINECRAFT_VERSION=1.21.10 \
     MINECRAFT_PORT=8888 \
-    SERVER_NAME="Minecraft Server" \
+    SERVER_NAME="DSO Minecraft Server" \
     MAX_PLAYERS=20 \
     DIFFICULTY=easy \
     GAMEMODE=survival \
-    EULA=false \
+    EULA=true \
+    ONLINE_MODE=false \
+    ENABLE_COMMAND_BLOCK=true \
     MEMORY_MIN=1G \
-    MEMORY_MAX=2G \
-    PLUGIN_URLS="https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar" \
-    PLUGIN_FORCE_DOWNLOAD=false
+    MEMORY_MAX=2G
 
-# Avoid interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install required packages (Java 21 for Paper 1.21.x)
+# Install curl (needed for server download)
 RUN apt-get update && \
-    apt-get install -y \
-    openjdk-21-jdk \
-    wget \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create minecraft server directory
 WORKDIR /minecraft

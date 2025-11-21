@@ -14,65 +14,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Navigate to project directory
+      - name: Build Docker image
         run: |
-          PROJECT_DIR="$HOME/mc-server"
-          if [ ! -d "$PROJECT_DIR" ]; then
-            mkdir -p "$PROJECT_DIR"
-          fi
-          cd "$PROJECT_DIR"
-          if [ ! -d ".git" ]; then
-            git clone https://github.com/${{ github.repository }}.git .
-          else
-            git fetch origin
-            git reset --hard origin/${{ github.ref_name }}
-          fi
-
-      - name: Ensure Docker Compose
-        id: compose
-        run: |
-          set -e
-          if docker compose version >/dev/null 2>&1; then
-            echo "cmd=docker compose" >> "$GITHUB_OUTPUT"
-          elif command -v docker-compose >/dev/null 2>&1; then
-            echo "cmd=docker-compose" >> "$GITHUB_OUTPUT"
-          else
-            sudo curl -L "https://github.com/docker/compose/releases/download/v2.25.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            echo "cmd=docker-compose" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Clean old server files for update
-        run: |
-          cd "$HOME/mc-server"
-          COMPOSE_CMD="${{ steps.compose.outputs.cmd }}"
-          # Stop containers if running
-          $COMPOSE_CMD down || true
-          # Remove old server.jar and .paper_version from volume to force update
-          VOLUME_NAME="mc-server_minecraft-data"
-          if docker volume inspect "$VOLUME_NAME" >/dev/null 2>&1; then
-            echo "Cleaning old server files from volume..."
-            docker run --rm -v "$VOLUME_NAME:/minecraft" ubuntu:22.04 bash -c "rm -f /minecraft/server.jar /minecraft/.paper_version && echo 'Old server files removed'"
-          else
-            echo "Volume does not exist yet, skipping cleanup"
-          fi
+          IMAGE_TAG="mc-server:${GITHUB_SHA::8}"
+          docker build -t "$IMAGE_TAG" .
+          docker tag "$IMAGE_TAG" mc-server:latest
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
 
       - name: Deploy containers
         env:
-          PAPER_VERSION: ${{ vars.PAPER_VERSION || '1.21.10' }}
+          MC_SERVER_IMAGE: mc-server:latest
+          MINECRAFT_VERSION: ${{ vars.MINECRAFT_VERSION || '1.21.10' }}
           MINECRAFT_PORT: ${{ vars.MINECRAFT_PORT || '8888' }}
-          SERVER_NAME: ${{ vars.SERVER_NAME || 'Minecraft Server' }}
+          SERVER_NAME: ${{ vars.SERVER_NAME || 'DSO Minecraft Server' }}
           MAX_PLAYERS: ${{ vars.MAX_PLAYERS || '20' }}
           DIFFICULTY: ${{ vars.DIFFICULTY || 'easy' }}
           GAMEMODE: ${{ vars.GAMEMODE || 'survival' }}
           EULA: "true"
+          ONLINE_MODE: ${{ vars.ONLINE_MODE || 'false' }}
+          ENABLE_COMMAND_BLOCK: ${{ vars.ENABLE_COMMAND_BLOCK || 'true' }}
           MEMORY_MIN: ${{ vars.MEMORY_MIN || '1G' }}
           MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
-          PLUGIN_URLS: ${{ vars.PLUGIN_URLS || 'https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar' }}
-          PLUGIN_FORCE_DOWNLOAD: ${{ vars.PLUGIN_FORCE_DOWNLOAD || 'false' }}
         run: |
-          cd "$HOME/mc-server"
-          COMPOSE_CMD="${{ steps.compose.outputs.cmd }}"
-          $COMPOSE_CMD pull || true
-          $COMPOSE_CMD up -d --build
+          docker compose down || true
+          docker compose up -d
           docker image prune -f

@@ -1,106 +1,45 @@
 #!/bin/bash
 set -e
 
-# Download/Update Paper server
-PAPER_VERSION="${PAPER_VERSION:-1.21.10}"
-echo "Checking Paper version: ${PAPER_VERSION}"
+MINECRAFT_VERSION="${MINECRAFT_VERSION:-1.21.10}"
+VERSION_FILE=".minecraft_version"
 
-# Get latest build number for the version
-BUILD_API="https://api.papermc.io/v2/projects/paper/versions/${PAPER_VERSION}/builds"
-LATEST_BUILD=$(curl -s "${BUILD_API}" | grep -o '"build":[0-9]*' | tail -1 | grep -o '[0-9]*')
-
-if [ -z "${LATEST_BUILD}" ]; then
-    echo "Error: Could not fetch latest Paper build. Using fallback build 100."
-    LATEST_BUILD=100
+# Download server.jar if needed
+if [ ! -f server.jar ] || [ ! -f "${VERSION_FILE}" ] || [ "$(cat ${VERSION_FILE} 2>/dev/null)" != "${MINECRAFT_VERSION}" ]; then
+    echo "Downloading Minecraft ${MINECRAFT_VERSION}..."
+    
+    # Hardcoded download URLs for common versions
+    case "${MINECRAFT_VERSION}" in
+        1.21.10)
+            DOWNLOAD_URL="https://piston-data.mojang.com/v1/objects/95495a7f485eedd84ce928cef5e223b757d2f764/server.jar"
+            ;;
+        *)
+            echo "ERROR: Version ${MINECRAFT_VERSION} not supported. Please add URL to start.sh"
+            exit 1
+            ;;
+    esac
+    
+    curl -L -f -o server.jar "${DOWNLOAD_URL}" || exit 1
+    echo "${MINECRAFT_VERSION}" > "${VERSION_FILE}"
+    echo "Downloaded Minecraft ${MINECRAFT_VERSION}"
 fi
 
-# Check if we need to download/update server.jar
-NEED_DOWNLOAD=false
-VERSION_FILE=".paper_version"
-
-if [ ! -f server.jar ]; then
-    echo "server.jar not found, will download..."
-    NEED_DOWNLOAD=true
-elif [ ! -f "${VERSION_FILE}" ] || [ "$(cat ${VERSION_FILE} 2>/dev/null)" != "${PAPER_VERSION}-${LATEST_BUILD}" ]; then
-    echo "Paper version mismatch or version file missing, will update..."
-    NEED_DOWNLOAD=true
-fi
-
-if [ "${NEED_DOWNLOAD}" = "true" ]; then
-    echo "Downloading Paper ${PAPER_VERSION} build ${LATEST_BUILD}..."
-    DOWNLOAD_URL="https://api.papermc.io/v2/projects/paper/versions/${PAPER_VERSION}/builds/${LATEST_BUILD}/downloads/paper-${PAPER_VERSION}-${LATEST_BUILD}.jar"
-    if curl -L -f -o server.jar "${DOWNLOAD_URL}"; then
-        echo "${PAPER_VERSION}-${LATEST_BUILD}" > "${VERSION_FILE}"
-        echo "Successfully downloaded Paper ${PAPER_VERSION} build ${LATEST_BUILD}"
-    else
-        echo "ERROR: Failed to download Paper server"
-        exit 1
-    fi
-else
-    echo "Paper ${PAPER_VERSION} build ${LATEST_BUILD} is already up to date"
-fi
-
-# Accept EULA if set to true
+# Accept EULA if set to true (must be before server.properties update)
 if [ "${EULA}" = "true" ]; then
-    echo "eula=true" > eula.txt
+    echo "#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).
+#$(date)
+eula=true" > eula.txt
 fi
 
-# Create server.properties if it does not exist
-if [ ! -f server.properties ]; then
-    echo "server-port=${MINECRAFT_PORT}" > server.properties
-    echo "server-name=${SERVER_NAME}" >> server.properties
-    echo "max-players=${MAX_PLAYERS}" >> server.properties
-    echo "difficulty=${DIFFICULTY}" >> server.properties
-    echo "gamemode=${GAMEMODE}" >> server.properties
-    echo "online-mode=false" >> server.properties
-    echo "enable-command-block=true" >> server.properties
-fi
-
-# Download plugins if requested
-echo "Checking for plugins to download..."
-echo "PLUGIN_URLS: ${PLUGIN_URLS}"
-if [ -n "${PLUGIN_URLS}" ]; then
-    echo "Creating plugins directory..."
-    mkdir -p plugins
-    IFS=',' read -r -a urls <<< "${PLUGIN_URLS}"
-    echo "Found ${#urls[@]} plugin URL(s) to process"
-    for url in "${urls[@]}"; do
-        if [ -z "${url}" ]; then
-            continue
-        fi
-        filename=$(basename "${url}")
-        destination="plugins/${filename}"
-        
-        # Extract plugin base name (e.g., "EssentialsX" from "EssentialsX-2.21.2.jar")
-        plugin_base=$(echo "${filename}" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+.*\.jar$//')
-        
-        # Always remove old versions of the same plugin (even if new one already exists)
-        if [ -n "${plugin_base}" ] && [ "${plugin_base}" != "${filename}" ]; then
-            echo "Removing old versions of ${plugin_base}..."
-            # Remove all versions except the one we want
-            find plugins/ -maxdepth 1 -type f -name "${plugin_base}-*.jar" ! -name "${filename}" -delete 2>/dev/null || true
-        fi
-        
-        # Skip download if file already exists and force download is not enabled
-        if [ -f "${destination}" ] && [ "${PLUGIN_FORCE_DOWNLOAD}" != "true" ]; then
-            echo "Plugin ${filename} already present, skipping download."
-            continue
-        fi
-        
-        echo "Downloading plugin ${filename} from ${url}..."
-        if curl -L -f -o "${destination}" "${url}"; then
-            echo "Successfully downloaded ${filename}"
-        else
-            echo "WARNING: Failed to download ${filename} from ${url} (404 or network error)"
-            echo "Plugin will be skipped, but server will continue to start"
-            rm -f "${destination}" 2>/dev/null || true
-        fi
-    done
-    echo "Plugin download process completed. Plugins in plugins/:"
-    ls -la plugins/*.jar 2>/dev/null | awk '{print $9}' | xargs -n1 basename || echo "No plugins found"
-else
-    echo "No PLUGIN_URLS set, skipping plugin download"
-fi
+cat > server.properties <<EOF
+server-port=${MINECRAFT_PORT}
+motd=${SERVER_NAME}
+max-players=${MAX_PLAYERS}
+difficulty=${DIFFICULTY}
+gamemode=${GAMEMODE}
+online-mode=${ONLINE_MODE:-false}
+enable-command-block=${ENABLE_COMMAND_BLOCK:-true}
+EOF
 
 # Start the server
 echo "Starting Minecraft server..."

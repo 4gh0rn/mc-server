@@ -1,5 +1,6 @@
 services:
   mc-server:
+    image: ${MC_SERVER_IMAGE:-mc-server:latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,17 +10,17 @@ services:
     volumes:
       - minecraft-data:/minecraft
     environment:
-      - PAPER_VERSION=${PAPER_VERSION:-1.21.10}
+      - MINECRAFT_VERSION=${MINECRAFT_VERSION:-1.21.10}
       - MINECRAFT_PORT=${MINECRAFT_PORT:-8888}
-      - SERVER_NAME=${SERVER_NAME:-Minecraft Server}
+      - SERVER_NAME=${SERVER_NAME:-DSO Minecraft Server}
       - MAX_PLAYERS=${MAX_PLAYERS:-20}
       - DIFFICULTY=${DIFFICULTY:-easy}
       - GAMEMODE=${GAMEMODE:-survival}
-      - EULA=${EULA:-false}
+      - EULA=${EULA:-true}
+      - ONLINE_MODE=${ONLINE_MODE:-false}
+      - ENABLE_COMMAND_BLOCK=${ENABLE_COMMAND_BLOCK:-true}
       - MEMORY_MIN=${MEMORY_MIN:-1G}
       - MEMORY_MAX=${MEMORY_MAX:-2G}
-      - PLUGIN_URLS=${PLUGIN_URLS:-https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar}
-      - PLUGIN_FORCE_DOWNLOAD=${PLUGIN_FORCE_DOWNLOAD:-false}
     restart: unless-stopped
     stdin_open: true
     tty: true
