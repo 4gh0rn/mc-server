@@ -1,0 +1,41 @@
+name: Deploy Minecraft Server
+
+on:
+  push:
+    branches: [main, master, deployment_mc]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG="mc-server:${GITHUB_SHA::8}"
+          docker build -t "$IMAGE_TAG" .
+          docker tag "$IMAGE_TAG" mc-server:latest
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Deploy containers
+        env:
+          MC_SERVER_IMAGE: mc-server:latest
+          MINECRAFT_VERSION: ${{ vars.MINECRAFT_VERSION || '1.21.10' }}
+          MINECRAFT_PORT: ${{ vars.MINECRAFT_PORT || '8888' }}
+          SERVER_NAME: ${{ vars.SERVER_NAME || 'DSO Minecraft Server' }}
+          MAX_PLAYERS: ${{ vars.MAX_PLAYERS || '20' }}
+          DIFFICULTY: ${{ vars.DIFFICULTY || 'easy' }}
+          GAMEMODE: ${{ vars.GAMEMODE || 'survival' }}
+          EULA: "true"
+          ONLINE_MODE: ${{ vars.ONLINE_MODE || 'false' }}
+          ENABLE_COMMAND_BLOCK: ${{ vars.ENABLE_COMMAND_BLOCK || 'true' }}
+          MEMORY_MIN: ${{ vars.MEMORY_MIN || '1G' }}
+          MEMORY_MAX: ${{ vars.MEMORY_MAX || '2G' }}
+        run: |
+          docker-compose down || true
+          docker-compose up -d
+          docker image prune -f

@@ -1,0 +1,30 @@
+services:
+  mc-server:
+    image: ${MC_SERVER_IMAGE:-mc-server:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mc-server
+    ports:
+      - "8888:8888"
+    volumes:
+      - minecraft-data:/minecraft
+    environment:
+      - MINECRAFT_VERSION=${MINECRAFT_VERSION:-1.21.10}
+      - MINECRAFT_PORT=${MINECRAFT_PORT:-8888}
+      - SERVER_NAME=${SERVER_NAME:-DSO Minecraft Server}
+      - MAX_PLAYERS=${MAX_PLAYERS:-20}
+      - DIFFICULTY=${DIFFICULTY:-easy}
+      - GAMEMODE=${GAMEMODE:-survival}
+      - EULA=${EULA:-true}
+      - ONLINE_MODE=${ONLINE_MODE:-false}
+      - ENABLE_COMMAND_BLOCK=${ENABLE_COMMAND_BLOCK:-true}
+      - MEMORY_MIN=${MEMORY_MIN:-1G}
+      - MEMORY_MAX=${MEMORY_MAX:-2G}
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  minecraft-data:
+    driver: local

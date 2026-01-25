@@ -1,0 +1,46 @@
+# Minecraft Server files
+world/
+world_nether/
+world_the_end/
+logs/
+crash-reports/
+usercache.json
+banned-players.json
+banned-ips.json
+ops.json
+whitelist.json
+eula.txt
+server.properties
+*.log
+.venv/
+
+# Docker
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive data
+*.pem
+*.key
+*.crt
+id_rsa
+id_rsa.pub
+*.env
+secrets/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
